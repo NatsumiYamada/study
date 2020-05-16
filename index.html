@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="main.css">
+    <link rel="stylesheet" type="text/css" href="prettify.css">
+    <title>JavaScript徹底攻略！関数について</title>
+</head>
+<body>
+
+<h1>カレー関数を用いてJavaScript関数を学ぶ</h1>
+<p>2020年5月16日<br>
+X-HACK株式会社 松田先生にJavaScriptの関数について<br>
+zoomで教わりました。<br>
+このサイトページは講義内容の忘備録です。<br>
+※CSS勉強中です！見づらくてすみません！！</p>
+<h2>カレー関数でカレーを作ってみる</h2>
+画像をクリックするとカレーが完成します<br>
+画像の違いでできるカレーが変わります<br>
+<div class="foods">
+    <input type="image" class="food" name="豚肉" src="img/pig.png" onclick="makeCurry('豚肉')">
+    <input type="image" class="food" name="野菜" src="img/begi.png" onclick="makeCurry('野菜')">
+</div>
+
+<div id="curry">
+    <p id="text">何カレーができるかな</p>
+    <img id ="curryPNG" src="img/dish.png" height="150">
+</div>
+
+<h2>カレー関数内容</h2>
+<p>やることは画像から取得した引数からテキスト、画像のsrcを作成するだけです。</p>
+<pre class="prettyprint">
+    //HTMLのidから取得
+    var text  = document.getElementById("text");
+    var curryPNG  = document.getElementById("curryPNG");
+
+    //カレー関数
+    function makeCurry(meet){
+        //テキストを表示
+        text.innerHTML = meet + 'カレーが完成しました！';
+        //画像を表示
+        var srcPNG;
+        switch (meet){
+            case '豚肉':
+                srcPNG = 'img/pig_curry.png';
+                break;
+            case '野菜':
+                srcPNG = 'img/begi_curry.png';
+                break;
+            default:
+                srcPNG = 'img/dish.png';
+                break;
+        }
+        curryPNG.src = srcPNG;
+    }
+</pre>
+<h2>関数とはサブプログラム</h2>
+<ul>
+    <li>関数とはメインのプログラムに紐づくプログラム</li>
+    <li>関数の命名は手順化した作業に名前をつけること</li>
+    <li>引数は関数で使う値を渡す</li>
+</ul>
+<h3>カレー関数に置き換えると</h3>
+<p>関数はカレーを作るレシピのこと、カレーの作り方がカレー関数に書かれます。<br>
+引数は具材のことで、豚肉やチキンのことです。豚肉を使ったら豚肉カレーができ、<br>
+野菜を使用したら野菜カレーができます。<br>
+ここで、カレーのレシピであるカレー関数の内容は変わりません。
+</p>
+
+<h2>Q&A</h2>
+<p>松田先生にした質問とその解答を載せます。<br>
+わかりやすくお答えいただきありがとうございます！</p>
+<div class="question">
+    <dl>
+        <dt>Q1:アロー関数と関数式の違いは何でしょうか…。<br>
+        結果を引数に入れるという使い方なら同じな気がします。</dt>
+        <dd>A1:書き方が違うだけっていうのもあるけど
+        thisを使った時の挙動が少し違います。</dd>
+    </dl>
+</div>
+
+<div class="question">
+<dl>
+    <dt>Q2:関数の中に無名関数をそのままいれると処理速度が早くなるのですか？</dt>
+    <dd>Q2:宣言しない分メモリを使わないので早くなります。<br>
+    他に、慣れてくると余計な変数は使わない風潮になってくるので利用する<br>
+    というのもあります。</dd>
+</dl>
+</div>
+
+<script>
+    var text  = document.getElementById("text");
+    var curryPNG  = document.getElementById("curryPNG");
+function makeCurry(meet){
+    //テキストを表示
+    text.innerHTML = meet + 'カレーが完成しました！';
+    //画像を表示
+    var srcPNG;
+    switch (meet){
+        case '豚肉':
+            srcPNG = 'img/pig_curry.png';
+            break;
+        case '野菜':
+            srcPNG = 'img/begi_curry.png';
+            break;
+        default:
+            srcPNG = 'img/dish.png';
+            break;
+    }
+    curryPNG.src = srcPNG;
+}
+prettyPrint();
+</script>
+<script src="prettify.js"></script>
+</body>
+</html>
