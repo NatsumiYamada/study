@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <title>JavaScript Practice</title>
+    <style>
+    #game{
+        display: flex;
+        flex-wrap:wrap;/*flexで折り返す*/
+    }
+    .box{
+        width: 100px;
+        height:100px;
+        background-color: skyblue;
+        cursor:pointer;/* 箱の上に来るとポインターになる */
+        transition: 0.8s;
+        margin: 0 10px 10px 0;
+        text-align: center;/*中央ぞろえ*/
+        line-height:100px;
+    }
+    .win{     
+        transition: 1.0s;
+        transform: rotateY( 360deg );
+        /*回転するtransform: rotate(360deg)*/
+    }
+
+    .lose{
+        transform: scale(0.9);
+    }
+    .text　.text2{
+        border:none;
+        text-align: center;
+        width: 100px;
+    }
+    
+    .nav{
+        border-bottom: double 5px orangered;
+        background-color: white;
+        display: flex;
+        padding: 0px;
+        width: 100%;
+    }
+    .logo{
+        height: 100px;
+        width: auto;
+    }
+    .game_button{
+        display: block;
+        text-decoration: none;
+        height:50px;
+        width: 300px;
+        font-size:35px;
+        text-align: center;
+        color: #fff;
+        font-weight: bold;
+        background: orangered;
+        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f9c667', endColorstr='#f79621',GradientType=1 );
+        border-radius: 5px;
+        
+    }
+    .game_button:active{
+        -ms-transform: translateY(2px);
+        -webkit-transform: translateY(2px);
+        transform: translateY(2px);
+        box-shadow: none;
+    }
+
+    /* 表示ボタン */
+    .openBtn {
+    cursor: pointer;
+    padding: 10px;
+    border: 1px solid #9FD6D2;
+    border-left: 10px solid #9FD6D2;
+    color: #666;
+    }
+
+    /* 説明文 */
+    .textArea {
+    display: none;
+    padding: 10px 10px 30px 50px;
+    color: #666;
+    }
+
+    /* 表示ボタン ー 逆三角アイコン */
+    .faColor {
+    color: #9FD6D2;
+    }
+
+    /*全体*/
+.hidden_box {
+    margin: 2em 0;/*前後の余白*/
+    padding: 0;
+}
+
+/*ボタン装飾*/
+.hidden_box label {
+    padding: 15px;
+    font-weight: bold;
+    border: solid 2px black;
+    cursor :pointer;
+}
+
+/*ボタンホバー時*/
+.hidden_box label:hover {
+    background: #efefef;
+}
+
+/*チェックは見えなくする*/
+.hidden_box input {
+    display: none;
+}
+
+/*中身を非表示にしておく*/
+.hidden_box .hidden_show {
+    height: 0;
+    padding: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: 0.8s;
+}
+
+/*クリックで中身表示*/
+.hidden_box input:checked ~ .hidden_show {
+    padding: 10px 0;
+    height: auto;
+    opacity: 1;
+}
+
+
+    </style>
+</head>
+<body>
+<header class="nav">
+    <img class="logo" src="logo.png">
+    <h1>HTML神経衰弱</h1>
+</header>
+<main>
+<h2>ルール説明</h2>
+<ul>
+    <li>裏になっているカードから開始タグと閉タグを探します</li>
+    <li>1ターンに2枚選択し、同じタグなら自分のものにできます</li>
+    <!--後々 <li>NPCよりたくさんタグを取得していたらあなたの勝ちです</li> -->
+    <li>取得カードはゲーム終了後に確認できます。勉強に活用してください</li>
+</ul>
+
+<div id="game">
+    <button id="easy" class="game_button" onclick="gameStart('easy')">簡単</button>
+    <button id="usually" class="game_button" onclick="gameStart('usually')">普通</button>
+    <button id="difficult" class="game_button" onclick="gameStart('difficult')">難しい</button>
+</div>
+
+   
+    <p>取得カードリスト</p>
+    <div id="tagList">
+    </div>      
+   
+</main>   
+</body>
+<script>
+    'use strict';
+    var turnStatus = 0;
+    var tagLength = 0;
+    var getTags = 0;
+    var getTagList = [];
+    //配列オブジェクトまとめ 
+   const text ={
+        div:"ひとかたまりの範囲をブロック要素で定義する",
+        tr:"テーブルの横方向の一行を定義する",
+        main:"文章の主となるところ",
+        em:"強調する",
+        I:"テキストを斜体（イタリック）にする",
+        META:"その文書に関する付帯情報を指定する",
+        p:"ひとつの段落であることを表す"
+   }
+   const origin={
+       div:"[division]分割",   
+       tr:"[table row]テーブル列",
+       main:"[main]メイン",
+       em:"[emphasis]強調",
+       I:"[Italic]斜体",
+       META:"[meta-]「－を含んだ」「ーを入れた」等の意味の接頭語。ギリシア語から。",
+       p:"[paragraph]段落"
+   }
+   const url={
+       div:"http://www.htmq.com/html/div.shtml",
+       tr:"http://www.htmq.com/html/tr.shtml",    
+       main:"https://www.tagindex.com/html5/group/main.html",
+       em:"http://www.htmq.com/html/em.shtml",
+       I:"http://www.htmq.com/html/i.shtml",
+       META:"http://www.htmq.com/html/meta.shtml",
+       p:"http://www.htmq.com/html5/p.shtml"
+   }
+
+ 
+//神経衰弱開始、カード生成
+    function gameStart(level){
+        var tag_origin = ["div","tr","main","em","I","META"];
+        var tag;
+        if(level == "easy"){
+            tag = tag_origin.splice(3, 2);
+        }else if(level == "usually"){
+            tag = tag_origin.splice(1, 4);
+        }else{
+            tag = tag_origin;
+        }
+
+        var tagAry = [];
+        tagLength = tag.length;//要素数
+        //<>と</>をつけたarray
+        for(let i = 0; i < tag.length; i++){
+            tagAry.push("<"+tag[i]+'>');
+            tagAry.push("</"+tag[i]+'>');          
+        }
+        //順番をランダムにする
+        arrShuffle(tagAry);       
+        /*タグカードを作る*/
+        for(let i = 0; i < tagAry.length; i++){
+            const div = document.createElement('div');
+            div.classList.add('box');
+            div.setAttribute('id', tagAry[i]);
+            div.addEventListener('click', function(){
+                cardClick(tagAry[i]);
+            });
+            document.getElementById('game').appendChild(div);
+        }
+        document.getElementById('easy').style.display ="none";
+        document.getElementById('usually').style.display ="none";
+        document.getElementById('difficult').style.display ="none";
+
+    }
+    
+    function cardClick(card){
+        let tag = document.getElementById(card);
+        //ダブルクリック防止 
+        if(tag.className=="box text"||tag.className=="text box"){
+            return;
+        }      
+        tag.textContent = tag.id;       
+        if(turnStatus>0){
+            setTimeout( () =>{
+            tag.classList.add('text2');
+            tweClick(tag);
+            },500);
+        }else{
+            tag.classList.add('text');
+            ++turnStatus;
+        }
+    }
+    
+
+    //２回目のクリックイベント
+    function tweClick(a){
+        var onecard = document.getElementsByClassName("text");
+        var tag1 = getTag(onecard[0]);
+        var tag2 = getTag(a); 
+        var id1 = onecard[0].id;
+        var id2 = a.id;
+        if(tag1 == tag2){
+            getTagList.push(tag1);
+            createList(tag1);
+            removeTag(onecard[0],a);
+            getTags++;
+        }else{
+            //タグの表示を消す
+            onecard[0].textContent = "";
+            a.textContent = "";
+        }
+        onecard[0].classList.remove("text");
+        a.classList.remove("text");
+        turnStatus = 0;
+        //取得タグ数が同じなら終了
+        if(getTags >= tagLength){
+            gameFinish(getTags,getTagList);
+        }
+
+        
+        //<>を取り除く
+        function getTag(text,getTags){
+            text = text.textContent.replace("/","");
+            var tag = text.substring(1,text.length-1);
+            return tag;
+        } 
+        //タグリスト作成と表示
+        function createList(tag){
+            var div = document.createElement("div");
+            var label = document.createElement("label");
+            var input = document.createElement("input");
+            label.innerHTML = tag;
+            label.setAttribute('for','label_'+ tag);
+            //li_text.innerHTML = "説明:" +text[tag];
+            div.classList.add('hidden_box');
+            div.id = 'tagList_'+ tag;
+            input.setAttribute('id','label_'+ tag);
+            input.setAttribute('type','checkbox');
+
+            div.appendChild(label);
+            div.appendChild(input);
+            
+            document.getElementById("tagList").appendChild(div);
+
+        }
+
+        //タグを取り除く
+        function removeTag(tag1,tag2){
+            var tag1 = document.getElementById(tag1.id);
+            var tag2 = document.getElementById(tag2.id);
+            tag1.classList.add('win');
+            tag2.classList.add('win');
+            tag1.style.visibility = 'hidden';
+            tag2.style.visibility = 'hidden';
+        }
+        //ゲーム終了
+        function gameFinish(getTags,getTagList){
+            swal({
+                title: "Good job!",
+                text: "タグを"+getTags+"個獲得しました！",
+                icon: "success",
+                button: "タグを確認する!",
+            });
+            //リスタート用
+            // const button = document.getElementById('game_button');
+            // button.textContent = "RESTART!";
+            // button.style.display = "inline";
+            // let box = document.getElementsByClassName('box');
+            // for(let i=0;i<box.length;i++){
+            //     document.getElementById('game').removeChild(box[i]);
+            // }
+            
+            createText(getTags,getTagList);
+            //タグに説明文追加
+            //取得配列と一致するtextContentに説明を入れる
+            function createText(getTags,getTagList){
+
+                for(var tag of getTagList){
+                    var tagName = 'tagList_'+ tag;
+                    var div_pearent = document.getElementById('tagList_'+tag);
+                    var div_child = document.createElement("div");
+                    var ul = document.createElement("ul");
+                    var li_text = document.createElement("li");
+                    var li_origin = document.createElement("li");
+                    var a_url = document.createElement("a").textContent=url[tag];
+                    var li_url = document.createElement("li");
+
+                    div_child.classList.add("hidden_show");
+                    li_text.textContent = "説明:" +text[tag];
+                    li_origin.textContent = "由来:" +origin[tag];
+                    li_url.textContent = "もっと詳しく:"+a_url ;
+                    ul.appendChild(li_text);
+                    ul.appendChild(li_origin);
+                    ul.appendChild(li_url);
+                    div_child.appendChild(ul);
+                    div_pearent.appendChild(div_child);
+                    }
+            
+            }
+            getTags = 0;
+            //タグが横から出てくる
+            //タグの説明文が表示される
+            //もう一度遊ぶボタンが出る
+        }
+    }
+    //タグ表示,onoclickFlg = trueの時のみ
+    //タグが同じか判断
+    //同じなら２枚のカードを消す
+    //ポイント加算
+    //取得リストに追加
+
+    
+    //引数に受け取った配列をシャッフルする
+    function arrShuffle(arr){
+        var len = arr.length;
+        while(len > 0){
+            var rnd = Math.floor(Math.random() * len);
+            var tmp = arr[len-1];
+            arr[len-1] = arr[rnd];
+            arr[rnd] = tmp;
+            len-=1;
+        }
+    }
+
+    //タグリスト表示
+     //   li = document.getElementsByClassName('box');
+      //  for(value of li){}
+     //   value.addEventListener('click', ()=>{
+      //      value.nextElementSibling.classList.toggle('textArea');
+     //   });
+
+
+
+</script>
+</html>
+
+
+<!-- const num = 5;//箱の数
+//引数の最大の整数を返す
+const winner = Math.floor(Math.random() * num) ;// 0~4
+for(let i = 0; i < num; i++){
+    /*documentを作る*/
+    const div = document.createElement('div');
+    div.classList.add('box');
+    div.addEventListener('click', ()=>{
+        if(i == winner){
+            div.textContent = 'Win!';/*divのテキストを入れる*/
+            div.classList.add('win');
+        }else{
+            div.textContent = 'Lose';
+            div.classList.add('lose');
+        }
+        div.classList.toggle('circle');
+    });
+    // divをbodyの子要素として追加
+    document.body.appendChild(div);
+} -->
