@@ -127,8 +127,38 @@
     height: auto;
     opacity: 1;
 }
+/* 吹き出し */
+.balloon-right-btm{
+    position: relative;
+    display: inline-block;
+    margin: 1.5em 15px 1.5em 0;
+    padding: 0 5px;
+    width: auto;
+    height: 90px;
+    line-height: 90px;
+    text-align: center;
+    color: #FFF;
+    font-size: 20px;
+    font-weight: bold;
+    background: #ffcc75;
+    border-radius: 50%;
+    box-sizing: border-box;
+}
+.balloon-right-btm:before {
+    content: "";
+    position: absolute;
+    bottom: -9px;
+    left: 6px;
+    margin-top: -15px;
+    border: 15px solid transparent;
+    border-left: 15px solid #ffcc75;
+    z-index: 0;
+    transform: rotate(115deg);
+}
 
-
+.noClick{
+    pointer-events : none;
+}
     </style>
 </head>
 <body>
@@ -151,16 +181,18 @@
     <button id="difficult" class="game_button" onclick="gameStart('difficult')">難しい</button>
 </div>
 
-   
+<div class=tagList>
+    <div id=speechBubble></div>
     <p>取得カードリスト</p>
-    <div id="tagList">
+    <p>もっと詳しくでHTMLレファレンスページに遷移するよ</p>
+    <div id="getTagList">    
     </div>      
-   
+</div>   
 </main>   
 </body>
 <script>
     'use strict';
-    var turnStatus = 0;
+    var turnStatus = 0;/*0:未選択、1:一枚目クリック、2：二枚目クリック*/
     var tagLength = 0;
     var getTags = 0;
     var getTagList = [];
@@ -193,7 +225,7 @@
        p:"http://www.htmq.com/html5/p.shtml"
    }
 
- 
+
 //神経衰弱開始、カード生成
     function gameStart(level){
         var tag_origin = ["div","tr","main","em","I","META"];
@@ -225,9 +257,10 @@
             });
             document.getElementById('game').appendChild(div);
         }
-        document.getElementById('easy').style.display ="none";
+        document.getElementById('game').removeChild(document.getElementById('easy'));
+        document.getElementById('game').removeChild(document.getElementById('difficult'));
         document.getElementById('usually').style.display ="none";
-        document.getElementById('difficult').style.display ="none";
+  //      document.getElementById('difficult').style.display ="none";
 
     }
     
@@ -239,16 +272,32 @@
         }      
         tag.textContent = tag.id;       
         if(turnStatus>0){
+            noClick();
             setTimeout( () =>{
             tag.classList.add('text2');
             tweClick(tag);
             },500);
+            canClick();
         }else{
             tag.classList.add('text');
             ++turnStatus;
         }
     }
     
+    //クリック防止
+    function noClick(){
+        const allTag = document.getElementsByClassName('box');//.classList.add('noClick');
+        for(var i=0;i<allTag.length;i++){
+            allTag[i].classList.add("noClick");
+        }
+    }
+
+    function canClick(){
+        const allTag = document.getElementsByClassName("box");//.classList.add('noClick');
+        for(var i=0;i<allTag.length;i++){
+            allTag[i].classList.remove("noClick");
+        }
+    }
 
     //２回目のクリックイベント
     function tweClick(a){
@@ -270,6 +319,7 @@
         onecard[0].classList.remove("text");
         a.classList.remove("text");
         turnStatus = 0;
+       // document.getElementsByClassName("box").classList.remove("noClick");
         //取得タグ数が同じなら終了
         if(getTags >= tagLength){
             gameFinish(getTags,getTagList);
@@ -298,7 +348,7 @@
             div.appendChild(label);
             div.appendChild(input);
             
-            document.getElementById("tagList").appendChild(div);
+            document.getElementById("getTagList").appendChild(div);
 
         }
 
@@ -319,15 +369,20 @@
                 icon: "success",
                 button: "タグを確認する!",
             });
-            //リスタート用
-            // const button = document.getElementById('game_button');
-            // button.textContent = "RESTART!";
-            // button.style.display = "inline";
-            // let box = document.getElementsByClassName('box');
-            // for(let i=0;i<box.length;i++){
-            //     document.getElementById('game').removeChild(box[i]);
-            // }
+            //リスタートボタン用
+            const button = document.getElementById('usually');
+            button.textContent = "RESTART!";
+            button.style.display = "inline";
+            button.onclick = null;
+            button.addEventListener("click",() => {
+                location.reload();
+            },false);
+
+            const speechBubble = document.getElementById("speechBubble");
+            speechBubble.classList.add("balloon-right-btm");
+            speechBubble.textContent = "タグをクリックして学習しよう";
             
+ 
             createText(getTags,getTagList);
             //タグに説明文追加
             //取得配列と一致するtextContentに説明を入れる
@@ -340,15 +395,17 @@
                     var ul = document.createElement("ul");
                     var li_text = document.createElement("li");
                     var li_origin = document.createElement("li");
-                    var a_url = document.createElement("a").textContent=url[tag];
+                    var a_url = document.createElement("a");
                     var li_url = document.createElement("li");
 
                     div_child.classList.add("hidden_show");
                     li_text.textContent = "説明:" +text[tag];
                     li_origin.textContent = "由来:" +origin[tag];
-                    li_url.textContent = "もっと詳しく:"+a_url ;
+                    a_url.innerText = "もっと詳しく";
+                    a_url.href=url[tag];
                     ul.appendChild(li_text);
                     ul.appendChild(li_origin);
+                    li_url.appendChild(a_url);
                     ul.appendChild(li_url);
                     div_child.appendChild(ul);
                     div_pearent.appendChild(div_child);
@@ -356,6 +413,8 @@
             
             }
             getTags = 0;
+            //タグリストに遷移
+            window.location.hash ="#getTagList"
             //タグが横から出てくる
             //タグの説明文が表示される
             //もう一度遊ぶボタンが出る
