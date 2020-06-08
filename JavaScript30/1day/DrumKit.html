@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DrumKit</title>
+</head>
+<style>
+    body{        
+        position:relative;
+        min-height: 100vh;/* viewport height	ビューポートの高さに対する割合 */
+        align-items:center;
+        justify-content:center;
+        background-image: url("img/666897_m.jpg");
+        background-size:cover;
+    }
+
+    .drumKey{
+        width: 100%;
+        margin: 0 auto;
+        position:absolute;
+        top:50%;
+        transform: translateY(-50%);
+    }
+
+    .key{
+        display: inline-block; 
+        border: 4px solid black;
+        border-radius: 5px;
+        margin:1rem;
+        font-size: 1.5rem;
+        text-align: center;
+        padding:1rem 0.5rem;
+        transition: all 0.07s;/*対象のCSSプロパティ　変化時間*/
+        width: 100px;
+        text-align: white;
+        background:rgba(0,0,0,0.4);/*red green blue alpha*/
+        text-shadow:0 0 5px black;
+    }
+    .playing{
+        transform:scale(1.1);
+        border-color: yellow;
+        box-shadow: 0 0 10px yellow;/*左右　上下　ぼかし　色*/
+    }
+
+    kbd{
+        display: block;
+        font-size:40px;
+        color:white;
+    }
+    .sound{
+        font-size: 1.2rem;
+        text-transform: uppercase;
+        text-align: center;
+        letter-spacing: 1px;
+        color:yellow;
+    }
+</style>
+<body>
+    <div class="drumKey">
+        <div data-key="65" class="key">
+            <kbd>A</kbd>
+            <span class="sound">bass1</span>
+        </div>
+        <div data-key="83" class="key">
+            <kbd>S</kbd>
+            <span class="sound">bass2</span>
+        </div>
+        <div data-key="68" class="key">
+            <kbd>D</kbd>
+            <span class="sound">cymbal</span>
+        </div>
+        <div data-key="70" class="key">
+            <kbd>F</kbd>
+            <span class="sound">hat1</span>
+        </div>
+        <div data-key="74" class="key">
+            <kbd>J</kbd>
+            <span class="sound">hat2</span>
+        </div>
+        <div data-key="75" class="key">
+            <kbd>K</kbd>
+            <span class="sound">snare</span>
+        </div>
+        <div data-key="76" class="key">
+            <kbd>L</kbd>
+            <span class="sound">Tom1</span>
+        </div>
+        <div data-key="187" class="key">
+            <kbd>+;</kbd>
+            <span class="sound">Tom2</span>
+        </div>
+
+    </div>
+
+    <audio data-key="65" src="sounds/bassdrum.wav"></audio>
+    <audio data-key="83" src="sounds/bassdrum2.wav"></audio>
+    <audio data-key="68" src="sounds/cymbal.wav"></audio>
+    <audio data-key="70" src="sounds/hat.wav"></audio>
+    <audio data-key="74" src="sounds/hat1.wav"></audio>
+    <audio data-key="75" src="sounds/snare.wav"></audio>
+    <audio data-key="76" src="sounds/tom1.wav"></audio>
+    <audio data-key="187" src="sounds/tom2.wav"></audio>
+
+<script>
+
+
+    function playSound(e){
+        const key = document.querySelector('.key[data-key="'+e.keyCode+'"]');
+        const audio = document.querySelector('audio[data-key="'+e.keyCode+'"]');
+        if(!audio) return;
+        audio.currentTime = 0;//rewind to the start
+        audio.play();
+        key.classList.add('playing');
+    }
+    function removeTransition(e){
+        if (e.propertyName !== 'transform') return;
+        this.classList.remove('playing');
+    }
+    const keys = document.querySelectorAll('.key');
+    keys.forEach(key => key.addEventListener('transitionend',removeTransition));
+
+    window.addEventListener('keydown',playSound);
+</script>
+    <!-- 学んだこと
+    学習時間6/4　１時間
+    data-* カスタムデータ属性
+    HTMLとスクリプトによるDOM表現との間で、固有の情報を交換できるようなる。
+    　
+    <kbd> キーボードのタグ
+    ユーザーがキーボードなどから入力するテキストを示すために使用されるタグ
+    学習時間6/5　0.5時間
+    querySelector()の書き方、value=""にしないとだめらしい…
+
+    学習時間6/6　1.2時間
+    transitionend イベントは、 CSS トランジションが完了したときに発生する。
+
+    合計　約３時間
+-->
+</body>
+</html>
